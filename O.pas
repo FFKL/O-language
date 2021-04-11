@@ -1,11 +1,12 @@
 
 Program O;
 
-Uses OText, OPars;
+Uses OText, OPars, OScan;
 
 Procedure Init;
 Begin
   ResetText;
+  InitScan;
 End;
 
 Procedure Done;

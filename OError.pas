@@ -8,8 +8,8 @@ Procedure Warning(Msg: String);
 
 Implementation
 
-Uses 
-OText, OScan;
+Uses OText, OScan;
+
 Procedure Error(Msg: String);
 
 Var 
@@ -28,7 +28,7 @@ Begin
 End;
 Procedure Expected(Msg: String);
 Begin
-  Error('Expected ', Msg);
+  Error('Expected ' + Msg);
 End;
 Procedure Warning(Msg : String);
 Begin

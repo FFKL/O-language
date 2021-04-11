@@ -4,7 +4,7 @@ Unit OText;
 Interface
 
 Const 
-  chSpaced = ' ';
+  chSpace = ' ';
   chTab = chr(9);
   chEOL = chr(10);
   chEOT = chr(0);
