@@ -3,21 +3,104 @@ Unit OPars;
 
 Interface
 Procedure Compile;
+Procedure StatSeq;
+forward;
 
 Implementation
 
-Uses OScan;
-Procedure Compile;
+Uses OScan, OError;
 
-Var lexAmount: integer;
+Procedure Check(Target: tLex, Message: String);
 Begin
-{TODO: replace the demo procedure with a real implementation}
-  lexAmount := 0;
-  While Lex <> lexEOT Do
+  If Lex <> Target Then
+    Expected(Message)
+  Else
+    NextLex;
+End;
+
+(* IMPORT Name {"," Name} ";" *)
+Procedure Import;
+Begin
+  Check(lexIMPORT, 'IMPORT');
+  Check(lexName, 'module name');
+  While Lex = lexComma Do
     Begin
-      lexAmount := lexAmount + 1;
       NextLex;
+      Check(lexName, 'module name');
     End;
-  WriteLn('Lexems amount - ', lexAmount);
+  Check(lexSemi, '";"');
+End;
+
+(* {CONST {ConstantsDeclaration ";"} | VAR{VariablesDeclaration ";"}} *)
+Procedure DeclSeq;
+Begin
+  While Lex In [lexCONST, lexVAR] Do
+    Begin
+      If Lex = lexCONST Then
+        Begin
+          NextLex;
+          While Lex = lexName Do
+            Begin
+              ConstDecl;
+              Check(lexSemi, '";"');
+            End;
+        End
+      Else
+        Begin
+          NextLex;
+          While Lex = lexName Do
+            Begin
+              VarDecl;
+              Check(lexSemi, '";"');
+            End;
+        End;
+    End;
+End;
+
+(* Statement {";" Statement} *)
+Procedure StatSeq;
+Begin
+  Statement;
+  While Lex = lexSemi Do
+    Begin
+      NextLex;
+      Statement;
+    End;
+End;
+
+(* Factor {MulOperator Factor} *)
+Procedure Term;
+Begin
+  Factor;
+  While Lex In [lexMult, lexDIV, lexMOD] Do
+    Begin
+      NextLex;
+      Factor;
+    End;
+End;
+
+(* MODULE Name ";" [Import] DeclarationsSequence [BEGIN StatementsSequence] END Name "." *)
+Procedure Module;
+Begin
+  Check(lexMODULE, 'MODULE');
+  Check(lexName, 'module name');
+  Check(lexSemi, '";"');
+  If Lex = lexIMPORT Then
+    Import;
+  DeclSeq;
+  If Lex = lexBEGIN Then
+    Begin
+      NextLex;
+      StatSeq;
+    End;
+  Check(lexEND, 'END');
+  Check(lexName, 'module name');
+  Check(lexDot, '"."');
+End;
+
+Procedure Compile;
+Begin
+  Module;
+  WriteLn('Program compiled');
 End;
 End.
