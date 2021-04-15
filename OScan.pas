@@ -128,8 +128,20 @@ Begin
 End;
 
 Procedure Number;
+
+Var 
+  digit: integer;
 Begin
-  {TODO: implement it}
+  Lex := lexNum;
+  Num := 0;
+  Repeat
+    digit := ord(Ch) - ord('0');
+    If (Maxint - digit) Div 10 >= Num Then
+      Num := 10 * Num + digit
+    Else
+      Error('Unsupported number size.');
+    NextCh;
+  Until Not (Ch In ['0'..'9']);
 End;
 
 Procedure Comment;
