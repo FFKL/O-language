@@ -146,7 +146,26 @@ End;
 
 Procedure Comment;
 Begin
-  {TODO: implement it}
+  NextCh;
+  Repeat
+    While (Ch <> '*') And (Ch <> chEOT) Do
+      If Ch = '(' Then
+        Begin
+          NextCh;
+          If Ch = '*' Then Comment;
+        End
+      Else
+        NextCh;
+    If Ch = '*' Then
+      NextCh;
+  Until (Ch In [')', chEOT]);
+  If Ch = ')' Then
+    NextCh
+  Else
+    Begin
+      LexPos := Pos;
+      Error('Comment was not finished');
+    End;
 End;
 
 Procedure NextLex;
