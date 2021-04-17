@@ -10,6 +10,19 @@ Implementation
 
 Uses OScan, OError;
 
+Const 
+  spABS = 1;
+  spMAX = 2;
+  spMIN = 3;
+  spDEC = 4;
+  spODD = 5;
+  spHALT = 6;
+  spINC = 7;
+  spInOpen = 8;
+  spInInt = 9;
+  spOutInt = 10;
+  spOutLn = 11;
+
 Procedure Check(Target: tLex, Message: String);
 Begin
   If Lex <> Target Then
@@ -78,6 +91,7 @@ Begin
       Factor;
     End;
 End;
+
 
 (* MODULE Name ";" [Import] DeclarationsSequence [BEGIN StatementsSequence] END Name "." *)
 Procedure Module;

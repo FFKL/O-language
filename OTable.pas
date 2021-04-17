@@ -7,7 +7,7 @@ Uses OScan;
 
 Type 
   tCat = (catConst, catVar, catType, catStProc, catModule, catGuard);
-  tType = (typNone, typeInt, typBool);
+  tType = (typNone, typInt, typBool);
   tObj = ^tObjRec;
   tObjRec = Record
     Name: tName;
