@@ -23,6 +23,26 @@ Const
   spOutInt = 10;
   spOutLn = 11;
 
+Procedure Compile;
+Begin
+  InitNameTable;
+  OpenScope;
+  Enter('ABS', catStProc, typInt, spABS);
+  Enter('MAX', catStProc, typInt, spMAX);
+  Enter('MIN', catStProc, typInt, spMIN);
+  Enter('DEC', catStProc, typNone, spDEC);
+  Enter('ODD', catStProc, typBool, spODD);
+  Enter('HALT', catStProc, typNone, spHALT);
+  Enter('INC', catStProc, typNone, spINC);
+  Enter('INTEGER', catType, typInt, 0);
+  OpenScope;
+  Module;
+  CloseScope;
+  CloseScope;
+  WriteLn;
+  WriteLn('Compilation is finished');
+End;
+
 Procedure Check(Target: tLex, Message: String);
 Begin
   If Lex <> Target Then
@@ -91,6 +111,8 @@ Begin
       Factor;
     End;
 End;
+
+
 
 
 (* MODULE Name ";" [Import] DeclarationsSequence [BEGIN StatementsSequence] END Name "." *)
