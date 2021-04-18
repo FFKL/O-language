@@ -23,26 +23,6 @@ Const
   spOutInt = 10;
   spOutLn = 11;
 
-Procedure Compile;
-Begin
-  InitNameTable;
-  OpenScope;
-  Enter('ABS', catStProc, typInt, spABS);
-  Enter('MAX', catStProc, typInt, spMAX);
-  Enter('MIN', catStProc, typInt, spMIN);
-  Enter('DEC', catStProc, typNone, spDEC);
-  Enter('ODD', catStProc, typBool, spODD);
-  Enter('HALT', catStProc, typNone, spHALT);
-  Enter('INC', catStProc, typNone, spINC);
-  Enter('INTEGER', catType, typInt, 0);
-  OpenScope;
-  Module;
-  CloseScope;
-  CloseScope;
-  WriteLn;
-  WriteLn('Compilation is finished');
-End;
-
 Procedure Check(Target: tLex, Message: String);
 Begin
   If Lex <> Target Then
@@ -112,14 +92,18 @@ Begin
     End;
 End;
 
-
-
-
 (* MODULE Name ";" [Import] DeclarationsSequence [BEGIN StatementsSequence] END Name "." *)
 Procedure Module;
+
+Var 
+  ModRef: tObj;
 Begin
   Check(lexMODULE, 'MODULE');
-  Check(lexName, 'module name');
+  If Lex <> lexName Then
+    Expected('module name')
+  Else
+    NewName(Name, catModule, ModRef);
+  NextLex;
   Check(lexSemi, '";"');
   If Lex = lexIMPORT Then
     Import;
@@ -130,13 +114,32 @@ Begin
       StatSeq;
     End;
   Check(lexEND, 'END');
-  Check(lexName, 'module name');
+  If Lex <> lexName Then
+    Expected('module name')
+  Else If Name <> ModRef^.Name Then
+         Expected('module name "' + ModRef^.Name + '"')
+  Else
+    NextLex;
   Check(lexDot, '"."');
 End;
 
 Procedure Compile;
 Begin
+  InitNameTable;
+  OpenScope;
+  Enter('ABS', catStProc, typInt, spABS);
+  Enter('MAX', catStProc, typInt, spMAX);
+  Enter('MIN', catStProc, typInt, spMIN);
+  Enter('DEC', catStProc, typNone, spDEC);
+  Enter('ODD', catStProc, typBool, spODD);
+  Enter('HALT', catStProc, typNone, spHALT);
+  Enter('INC', catStProc, typNone, spINC);
+  Enter('INTEGER', catType, typInt, 0);
+  OpenScope;
   Module;
-  WriteLn('Program compiled');
+  CloseScope;
+  CloseScope;
+  WriteLn;
+  WriteLn('Compilation is finished');
 End;
 End.
