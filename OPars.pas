@@ -70,35 +70,39 @@ Begin
 End;
 
 (* ["+" | "-"] (Integer | Name) *)
-Procedure ConstExpr(var Value: integer);
-Var
+Procedure ConstExpr(Var Value: integer);
+
+Var 
   NameTableRecord: tObj;
   Operation: tLex;
-begin
+Begin
   Operation := lexPlus;
-  if Lex in [lexPlus, lexMinus] then begin
-    Operation := Lex;
-    NextLex;
-  end;
-  if Lex = lexNum then begin
-    Value := Num;
-    NextLex;
-    end
-  else if Lex = lexName then begin
-      Find(Name, NameTableRecord);
-      if NameTableRecord^.Cat = catGuard then
-        Error('There is no way to define a constant through it itself' )
-      else if NameTableRecord^.Cat = catGuard then
-        Expected('constant name')
-      else
-        Value := NameTableRecord^.Val;
+  If Lex In [lexPlus, lexMinus] Then
+    Begin
+      Operation := Lex;
       NextLex;
-    end
-  else
+    End;
+  If Lex = lexNum Then
+    Begin
+      Value := Num;
+      NextLex;
+    End
+  Else If Lex = lexName Then
+         Begin
+           Find(Name, NameTableRecord);
+           If NameTableRecord^.Cat = catGuard Then
+             Error('There is no way to define a constant through it itself' )
+           Else If NameTableRecord^.Cat = catGuard Then
+                  Expected('constant name')
+           Else
+             Value := NameTableRecord^.Val;
+           NextLex;
+         End
+  Else
     Expected('constant expression');
-  if Operation = lexMinus then
+  If Operation = lexMinus Then
     Value := -Value;
-end;
+End;
 
 (* Name "=" ConstExpression *)
 Procedure ConstDecl;
@@ -114,6 +118,36 @@ Begin
   ConstRef^.Cat := catConst;
 End;
 
+(* Name {"," Name} ":" Type *)
+Procedure VarDecl;
+
+Var 
+  NameRef: tObj;
+Begin
+  If Lex <> lexName Then
+    Expected('name')
+  Else
+    Begin
+      NewName(Name, catVar, NameRef);
+      NameRef^.Typ := typInt; {Only integer is present}
+      NextLex;
+    End;
+  While Lex = lexComma Do
+    Begin
+      NextLex;
+      If Lex <> lexName Then
+        Expected('name')
+      Else
+        Begin
+          NewName(Name, catVar, NameRef);
+          NameRef^.Typ := typInt; {Only integer is present}
+          NextLex;
+        End;
+    End;
+  Check(lexColon, '":"');
+  ParseType;
+End;
+
 (* {CONST {ConstantsDeclaration ";"} | VAR{VariablesDeclaration ";"}} *)
 Procedure DeclSeq;
 Begin
@@ -125,7 +159,7 @@ Begin
           While Lex = lexName Do
             Begin
               ConstDecl;
-            [BEGIN StatementsSequence] END Name "."  Check(lexSemi, '";"');
+              Check(lexSemi, '";"');
             End;
         End
       Else
