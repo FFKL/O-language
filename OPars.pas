@@ -69,6 +69,51 @@ Begin
   Check(lexSemi, '";"');
 End;
 
+(* ["+" | "-"] (Integer | Name) *)
+Procedure ConstExpr(var Value: integer);
+Var
+  NameTableRecord: tObj;
+  Operation: tLex;
+begin
+  Operation := lexPlus;
+  if Lex in [lexPlus, lexMinus] then begin
+    Operation := Lex;
+    NextLex;
+  end;
+  if Lex = lexNum then begin
+    Value := Num;
+    NextLex;
+    end
+  else if Lex = lexName then begin
+      Find(Name, NameTableRecord);
+      if NameTableRecord^.Cat = catGuard then
+        Error('There is no way to define a constant through it itself' )
+      else if NameTableRecord^.Cat = catGuard then
+        Expected('constant name')
+      else
+        Value := NameTableRecord^.Val;
+      NextLex;
+    end
+  else
+    Expected('constant expression');
+  if Operation = lexMinus then
+    Value := -Value;
+end;
+
+(* Name "=" ConstExpression *)
+Procedure ConstDecl;
+
+Var 
+  ConstRef: tObj;
+Begin
+  NewName(Name, catGuard, ConstRef);
+  NextLex;
+  Check(lexEQ, '"="');
+  ConstExpr(ConstRef^.Val);
+  ConstRef^.Typ := typInt; {Only integer is present}
+  ConstRef^.Cat := catConst;
+End;
+
 (* {CONST {ConstantsDeclaration ";"} | VAR{VariablesDeclaration ";"}} *)
 Procedure DeclSeq;
 Begin
@@ -80,7 +125,7 @@ Begin
           While Lex = lexName Do
             Begin
               ConstDecl;
-              Check(lexSemi, '";"');
+            [BEGIN StatementsSequence] END Name "."  Check(lexSemi, '";"');
             End;
         End
       Else
@@ -117,7 +162,8 @@ Begin
     End;
 End;
 
-(* MODULE Name ";" [Import] DeclarationsSequence [BEGIN StatementsSequence] END Name "." *)
+(* MODULE Name ";" [Import] DeclarationsSequence *)
+(* [BEGIN StatementsSequence] END Name "." *)
 Procedure Module;
 
 Var 
