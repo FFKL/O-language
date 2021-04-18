@@ -31,15 +31,40 @@ Begin
     NextLex;
 End;
 
+Procedure ImportModule;
+
+Var 
+  ImpRef: tObj;
+Begin
+  If Lex = lexName Then
+    Begin
+      NewName(Name, catModule, ImpRef);
+      If Name = 'In' Then {Built-in 'In' module}
+        Begin
+          Enter('In.Open', catStProc, typNone, spInOpen);
+          Enter('In.Int', catStProc, typNone, spInInt);
+        End
+      Else If Name = 'Out' Then {Built-in 'Out' module}
+             Begin
+               Enter('Out.Int', catStProc, typNone, spOutInt);
+               Enter('Out.Ln', catStProc, typNone, spOutLn);
+             End
+      Else Error('Unknown module');
+      NextLex;
+    End
+  Else
+    Expected('imported module name');
+End;
+
 (* IMPORT Name {"," Name} ";" *)
 Procedure Import;
 Begin
   Check(lexIMPORT, 'IMPORT');
-  Check(lexName, 'module name');
+  ImportModule;
   While Lex = lexComma Do
     Begin
       NextLex;
-      Check(lexName, 'module name');
+      ImportModule;
     End;
   Check(lexSemi, '";"');
 End;
