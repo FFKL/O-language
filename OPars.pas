@@ -69,6 +69,38 @@ Begin
   Check(lexSemi, '";"');
 End;
 
+Procedure Statement;
+
+Var :
+      X: tObj;
+Begin
+  If Lex = lexName Then
+    Begin
+      Find(Name, X);
+      If X^.Cat = catModule Then
+        Begin
+          NextLex;
+          Check(lexDot, '"."');
+          If (Lex = lexName) And (Length(X^.Name) + Length(Name) < NameLen)
+            Then
+            Find(X^.Name + '.' + Name, X)
+          Else
+            Expected('name from module ' + X^.Name);
+        End;
+      If X^.Cat = catVar Then
+        AssignmentStatement
+      Else If (X^.Cat = catStProc) And (X^.Typ = typNone)
+             Then
+             CallStatement(X^.Val)
+      Else
+        Expected('variable or procedure designation');
+    End
+  Else If Lex = lexIF Then
+         IfStatement
+  Else If Lex = lexWHILE Then
+         WhileStatement
+End;
+
 (* Name ["(" Expression | Type ")"] | Integer | "(" Expression ")" *)
 Procedure Factor(Var T: tType);
 
