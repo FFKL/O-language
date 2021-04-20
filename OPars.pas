@@ -69,6 +69,117 @@ Begin
   Check(lexSemi, '";"');
 End;
 
+(* Name ["(" Expression | Type ")"] | Integer | "(" Expression ")" *)
+Procedure Factor(Var T: tType);
+
+Var 
+  X: tObj;
+Begin
+  If Lex = lexName Then
+    Begin
+      Find(Name, X);
+      If X^.Cat = catVar Then
+        Begin
+          T := X^.Typ;
+          NextLex;
+        End
+      Else If X^.Cat = catConst Then
+             Begin
+               T := X^.Typ;
+               NextLex;
+             End
+      Else If (X^.Cat = catStProc) And (X^.Typ <> typNone)
+             Then
+             Begin
+               NextLex;
+               Check(lexLPar, '"("');
+               StFunc(X^.Val, T);
+               Check(lexRPar, '")"');
+             End
+      Else
+        Expected('variable, constant or procedure-function');
+    End
+  Else If Lex = lexNum Then
+         Begin
+           T := typInt;
+           NextLex;
+         End
+  Else If Lex = lexLPar Then
+         Begin
+           NextLex;
+           Expression(T);
+           Check(lexRPar, '")"');
+         End
+  Else
+    Expected('name, integer number or "("');
+End;
+
+(* Factor {MultDivModOperation Factor} *)
+Procedure Term(Var T: tType);
+Begin
+  Factor(T);
+  If Lex In [lexMult, lexDIV, lexMOD] Then
+    Begin
+      If T <> typInt Then
+        Error(
+        'The type of the operation is incompatible with the type of the operand'
+        );
+      Repeat
+        NextLex;
+        Factor(T);
+        If T <> typInt Then
+          Expected('integer expression');
+      Until Not(Lex In [lexMult, lexDIV, lexMOD]);
+    End;
+End;
+
+
+(* ["+" | "-"] Term {PlusMinusOperation Term} *)
+Procedure SimpleExpr(Var T: tType);
+Begin
+  If Lex In [lexPlus, lexMinus] Then
+    Begin
+      NextLex;
+      Term(T);
+      If T <> typInt Then
+        Expected('integer expression');
+    End
+  Else
+    Term(T);
+  If Lex In [lexPlus, lexMinus] Then
+    Begin
+      If T <> typInt Then
+        Error(
+        'The type of the operation is incompatible with the type of the operand'
+        );
+      Repeat
+        NextLex;
+        Term(T);
+        If T <> typInt Then
+          Expected('integer expression');
+      Until Not(Lex In [lexPlus, lexMinus]);
+    End;
+End;
+
+(* SimpleExpression [RelationalOperator SimpleExpression] *)
+Procedure Expression(Var T: tType);
+Begin
+  SimpleExpr(T);
+  If Lex In [lexEQ, lexNE, lexGT, lexGE, lexLT, lexLE]
+    Then
+    Begin
+      If T <> typInt Then
+        Error(
+        'The type of the operation is incompatible with the type of the operand'
+        );
+      NextLex;
+      SimpleExpr(T);
+      If T <> typInt Then
+        Expected('integer expression');
+      T := typBool;
+    End;
+End;
+
 (* ["+" | "-"] (Integer | Name) *)
 Procedure ConstExpr(Var Value: integer);
 
