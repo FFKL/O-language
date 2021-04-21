@@ -8,7 +8,7 @@ forward;
 
 Implementation
 
-Uses OScan, OError;
+Uses OScan, OError, OGen;
 
 Const 
   spABS = 1;
@@ -29,6 +29,56 @@ Begin
     Expected(Message)
   Else
     NextLex;
+End;
+
+Procedure IntExpression;
+
+Var 
+  T: tType;
+Begin
+  Expression(T);
+  If T <> typInt Then
+    Expected('integer expression');
+End;
+
+Procedure BoolExpression;
+
+Var 
+  T: tType;
+Begin
+  Expression(T);
+  If T <> typBool Then
+    Expected('boolean expression');
+End;
+
+Procedure StFunc(F: integer; Var T: tType);
+Begin
+  Case F Of 
+    spABS:
+           Begin
+             IntExpression;
+             GenAbs;
+             T := typInt;
+           End;
+    spMAX:
+           Begin
+             ParseType;
+             Gen(MaxInt);
+             T := typInt;
+           End;
+    spMin:
+           Begin
+             ParseType;
+             GenMin;
+             T := typInt;
+           End;
+    spODD:
+           Begin
+             IntExpression;
+             GenOdd;
+             T := typBool;
+           End;
+  End;
 End;
 
 Procedure ImportModule;
@@ -112,11 +162,14 @@ Begin
       Find(Name, X);
       If X^.Cat = catVar Then
         Begin
+          GenAddr(X);
+          Gen(cmLoad);
           T := X^.Typ;
           NextLex;
         End
       Else If X^.Cat = catConst Then
              Begin
+               GenConst(X^.Val);
                T := X^.Typ;
                NextLex;
              End
@@ -134,6 +187,7 @@ Begin
   Else If Lex = lexNum Then
          Begin
            T := typInt;
+           GenConst(Num);
            NextLex;
          End
   Else If Lex = lexLPar Then

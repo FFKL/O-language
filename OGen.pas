@@ -9,6 +9,8 @@ Var
 
 Procedure InitGen;
 Procedure Gen(Cmd: integer);
+Procedure GenConst(C: integer);
+Procedure GenAbs;
 
 Implementation
 
@@ -23,6 +25,22 @@ Procedure Gen(Cmd: integer);
 Begin
   M[PC] := Cmd;
   PC := PC + 1;
+End;
+
+Procedure GenConst(C: integer);
+Begin
+  Gen(abs(c));
+  If C < 0 Then
+    Gen(cmNeg);
+End;
+
+Procedure GenAbs;
+Begin
+  Gen(cmDup);
+  Gen(0);
+  Gen(PC + 3);
+  Gen(cmIfGE);
+  Gen(cmNeg);
 End;
 
 End.
