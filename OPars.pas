@@ -63,7 +63,7 @@ Begin
     spMAX:
            Begin
              ParseType;
-             Gen(MaxInt);
+             GenMax;
              T := typInt;
            End;
     spMin:

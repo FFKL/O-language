@@ -11,6 +11,8 @@ Procedure InitGen;
 Procedure Gen(Cmd: integer);
 Procedure GenConst(C: integer);
 Procedure GenAbs;
+Procedure GenMin;
+Procedure GenMax;
 
 Implementation
 
@@ -41,6 +43,19 @@ Begin
   Gen(PC + 3);
   Gen(cmIfGE);
   Gen(cmNeg);
+End;
+
+Procedure GenMin;
+Begin
+  Gen(MaxInt);
+  Gen(cmNeg);
+  Gen(1);
+  Gen(cmSub);
+End;
+
+Procedure GenMax;
+Begin
+  Gen(MaxInt);
 End;
 
 End.
