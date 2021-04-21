@@ -39,3 +39,147 @@ Var
   M: array [0..MemSize - 1] Of integer;
 
 Procedure Run;
+
+Implementation
+
+Procedure Run;
+
+Var 
+  PC: integer;
+  SP: integer;
+  Cmd: integer;
+  Buf: integer;
+Begin
+  PC := 0;
+  SP := MemSize;
+  Cmd := M[PC];
+  While Cmd <> cmStop Do
+    Begin
+      PC := PC + 1;
+      If Cmd >= 0 Then
+        Begin
+          SP := SP - 1;
+          M[SP] := Cmd;
+        End
+      Else
+        Case Cmd Of 
+          cmAdd:
+                 Begin
+                   SP := SP + 1;
+                   M[SP] := M[SP] + M[SP - 1];
+                 End;
+          cmSub:
+                 Begin
+                   SP := SP + 1;
+                   M[SP] := M[SP] + M[SP - 1];
+                 End;
+          cmMult:
+                  Begin
+                    SP := SP + 1;
+                    M[SP] := M[SP] * M[SP - 1];
+                  End;
+          cmDiv:
+                 Begin
+                   SP := SP + 1;
+                   M[SP] := M[SP] Div M[SP - 1];
+                 End;
+          cmMod:
+                 Begin
+                   SP := SP + 1;
+                   M[SP] := M[SP] Mod M[SP - 1];
+                 End;
+          cmNeg:
+                 M[SP] := -M[SP];
+          cmLoad:
+                  M[SP] := M[M[SP]];
+          cmSave:
+                  Begin
+                    M[M[SP + 1]] := M[SP];
+                    SP := SP + 2;
+                  End;
+          cmDup:
+                 Begin
+                   SP := SP - 1;
+                   M[SP] := M[SP + 1];
+                 End;
+          cmDrop:
+                  SP := SP + 1;
+          {TODO: change to xor algorithm}
+          cmSwap:
+                  Begin
+                    Buf := M[SP];
+                    M[SP] := M[SP + 1];
+                    M[SP + 1] := Buf;
+                  End;
+          cmOver:
+                  Begin
+                    SP := SP - 1;
+                    M[SP] := M[SP + 2];
+                  End;
+          cmGOTO:
+                  Begin
+                    PC := M[SP];
+                    SP := SP + 1;
+                  End;
+          cmIfEQ:
+                  Begin
+                    If M[SP + 2] = M[SP + 1] Then
+                      PC := M[SP];
+                    SP := SP + 3;
+                  End;
+          cmIfNE:
+                  Begin
+                    If M[SP + 2] <> M[SP + 1] Then
+                      PC := M[SP];
+                    SP := SP + 3;
+                  End;
+          cmIfLE:
+                  Begin
+                    If M[SP + 2] <= M[SP + 1] Then
+                      PC := M[SP];
+                    SP := SP + 3;
+                  End;
+          cmIfLT:
+                  Begin
+                    If M[SP + 2] < M[SP + 1] Then
+                      PC := M[SP];
+                    SP := SP + 3;
+                  End;
+          cmIfGE:
+                  Begin
+                    If M[SP + 2] >= M[SP + 1] Then
+                      PC := M[SP];
+                    SP := SP + 3;
+                  End;
+          cmIfGT:
+                  Begin
+                    If M[SP + 2] > M[SP + 1] Then
+                      PC := M[SP];
+                    SP := SP + 3;
+                  End;
+          cmIn:
+                Begin
+                  SP := SP - 1;
+                  Write('?');
+                  ReadIn(M[SP]);
+                End;
+          cmOut:
+                 Begin
+                   Write(M[SP + 1]:M[SP]);
+                   SP := SP + 2;
+                 End;
+          cmOutLn:
+                   WriteLn;
+          Else
+            Begin
+              WriteLn('Unacceptable operation code');
+              M[PC] := cmStop;
+            End;
+        End;
+      WriteLn;
+      If SP < MemSize Then
+        WriteLn('Return code', M[SP]);
+      Write('Press ENTER');
+      ReadLn;
+    End;
+End;
