@@ -15,6 +15,7 @@ Procedure GenMin;
 Procedure GenMax;
 Procedure GenOdd;
 Procedure GenComp(Op: tLex);
+Procedure GenAddr(X: tObj);
 
 Implementation
 

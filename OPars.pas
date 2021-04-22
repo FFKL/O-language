@@ -119,6 +119,38 @@ Begin
   Check(lexSemi, '";"');
 End;
 
+(* Variable = Name. *)
+Procedure Variable;
+
+Var 
+  X: tObj;
+Begin
+  If Lex <> lexName Then
+    Expected('name');
+  Else
+    Begin
+      Find(Name, X);
+      If X^.Cat <> catVar Then
+        Expected('variable name');
+      GenAddr(X);
+      NextLex;
+    End;
+End;
+
+(* Variable ":=" Expression *)
+Procedure AssignmentStatement;
+Begin
+  Variable;
+  If Lex = lexAss Then
+    Begin
+      NextLex;
+      IntExpression;
+      Gen(cmSave);
+    End
+  Else
+    Expected('":="');
+End;
+
 Procedure Statement;
 
 Var :
