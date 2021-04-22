@@ -202,6 +202,9 @@ End;
 
 (* Factor {MultDivModOperation Factor} *)
 Procedure Term(Var T: tType);
+
+Var 
+  Op: tLex;
 Begin
   Factor(T);
   If Lex In [lexMult, lexDIV, lexMOD] Then
@@ -211,10 +214,16 @@ Begin
         'The type of the operation is incompatible with the type of the operand'
         );
       Repeat
+        Op := Lex;
         NextLex;
         Factor(T);
         If T <> typInt Then
           Expected('integer expression');
+        Case Op Of 
+          lexMult: Gen(cmMult);
+          lexDIV: Gen(cmDIV);
+          lexMOD: Gen(cmMOD);
+        End;
       Until Not(Lex In [lexMult, lexDIV, lexMOD]);
     End;
 End;
@@ -379,17 +388,6 @@ Begin
     Begin
       NextLex;
       Statement;
-    End;
-End;
-
-(* Factor {MulOperator Factor} *)
-Procedure Term;
-Begin
-  Factor;
-  While Lex In [lexMult, lexDIV, lexMOD] Do
-    Begin
-      NextLex;
-      Factor;
     End;
 End;
 
