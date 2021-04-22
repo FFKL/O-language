@@ -58,4 +58,16 @@ Begin
   Gen(MaxInt);
 End;
 
+Procedure GenOdd;
+
+Const 
+  TemporaryMemoryAddress = 0;
+Begin
+  Gen(2);
+  Gen(cmMod);
+  Gen(0);
+  Gen(TemporaryMemoryAddress);
+  Gen(cmIfEQ);
+End;
+
 End.
