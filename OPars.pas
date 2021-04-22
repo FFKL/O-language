@@ -231,13 +231,19 @@ End;
 
 (* ["+" | "-"] Term {PlusMinusOperation Term} *)
 Procedure SimpleExpr(Var T: tType);
+
+Var 
+  Op: tLex;
 Begin
   If Lex In [lexPlus, lexMinus] Then
     Begin
+      Op := Lex;
       NextLex;
       Term(T);
       If T <> typInt Then
         Expected('integer expression');
+      If Op = lexMinus Then
+        Gen(cmNeg);
     End
   Else
     Term(T);
@@ -248,21 +254,30 @@ Begin
         'The type of the operation is incompatible with the type of the operand'
         );
       Repeat
+        Op := Lex;
         NextLex;
         Term(T);
         If T <> typInt Then
           Expected('integer expression');
+        Case Op Of 
+          lexPlus:  Gen(cmAdd);
+          lexMinus: Gen(cmSub);
+        End;
       Until Not(Lex In [lexPlus, lexMinus]);
     End;
 End;
 
 (* SimpleExpression [RelationalOperator SimpleExpression] *)
 Procedure Expression(Var T: tType);
+
+Var 
+  Op: tLex;
 Begin
   SimpleExpr(T);
   If Lex In [lexEQ, lexNE, lexGT, lexGE, lexLT, lexLE]
     Then
     Begin
+      Op := Lex;
       If T <> typInt Then
         Error(
         'The type of the operation is incompatible with the type of the operand'
@@ -271,6 +286,7 @@ Begin
       SimpleExpr(T);
       If T <> typInt Then
         Expected('integer expression');
+      GenComp(Op);
       T := typBool;
     End;
 End;

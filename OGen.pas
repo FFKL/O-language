@@ -13,6 +13,8 @@ Procedure GenConst(C: integer);
 Procedure GenAbs;
 Procedure GenMin;
 Procedure GenMax;
+Procedure GenOdd;
+Procedure GenComp(Op: tLex);
 
 Implementation
 
@@ -68,6 +70,22 @@ Begin
   Gen(0);
   Gen(TemporaryMemoryAddress);
   Gen(cmIfEQ);
+End;
+
+Procedure GenComp(Op: tLex);
+
+Const 
+  TemporaryMemoryAddress = 0;
+Begin
+  Gen(TemporaryMemoryAddress);
+  Case Op Of 
+    lexEQ: Gen(cmIfNE);
+    lexNE: Gen(cmIfEQ);
+    lexLE: Gen(cmIfGT);
+    lexLT: Gen(cmIfGE);
+    lexGE: Gen(cmIfLT);
+    lexGT: Gen(cmIfLE);
+  End;
 End;
 
 End.
