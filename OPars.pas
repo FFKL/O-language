@@ -151,10 +151,88 @@ Begin
     Expected('":="');
 End;
 
+Procedure StProc(P: integer);
+
+Var 
+  c: integer;
+Begin
+  Case P Of 
+    spDEC:
+           Begin
+             Variable;
+             Gen(cmDup);
+             Gen(cmLoad);
+             If Lex = lexComma Then
+               Begin
+                 NextLex;
+                 IntExpression;
+               End
+             Else
+               Gen(1);
+             Gen(cmSub);
+             Gen(cmSave);
+           End;
+    spINC:
+           Begin
+             Variable;
+             Gen(cmDup);
+             Gen(cmLoad);
+             If Lex = lexComma Then
+               Begin
+                 NextLex;
+                 IntExpression;
+               End
+             Else
+               Gen(1);
+             Gen(cmAdd);
+             Gen(cmSave);
+           End;
+    spInOpen:
+      { empty };
+    spInInt:
+             Begin
+               Variable;
+               Gen(cmIn);
+               Gen(cmSave);
+             End;
+    spOutInt:
+              Begin
+                IntExpression;
+                Check(lexComma, '","');
+                IntExpression;
+                Gen(cmOut);
+              End;
+    spOutLn:
+             Gen(cmOutLn);
+    spHalt:
+            Begin
+              ConstExpr(c);
+              GenConst(c);
+              Gen(cmStop);
+            End;
+  End;
+End;
+
+(* Name ["(" {Expression | Variable} ")"] *)
+Procedure CallStatement(P: integer);
+Begin
+  Check(lexName, 'procedure name');
+  If Lex = lexLPar Then
+    Begin
+      NextLex;
+      StProc(P);
+      Check(lexRPar, '")"');
+    End
+  Else If P In [spOutLn, spInOpen] Then
+         StProc(P)
+  Else
+    Expected('"("');
+End;
+
 Procedure Statement;
 
-Var :
-      X: tObj;
+Var 
+  X: tObj;
 Begin
   If Lex = lexName Then
     Begin
