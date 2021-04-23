@@ -574,6 +574,25 @@ Begin
     End;
 End;
 
+Procedure AllocateVariables;
+
+Var 
+  VRef: tObj;
+Begin
+  FirstVar(VRef);
+  While VRef <> Nil Do
+    Begin
+      If VRef^.Val = 0 Then
+        Warning('Variable ' + VRef^.Name + ' is not used')
+      Else
+        Begin
+          Fixup(VRef^.Val);
+          PC := PC + 1;
+        End;
+      NextVar(VRef);
+    End;
+End;
+
 (* MODULE Name ";" [Import] DeclarationsSequence *)
 (* [BEGIN StatementsSequence] END Name "." *)
 Procedure Module;
@@ -604,6 +623,9 @@ Begin
   Else
     NextLex;
   Check(lexDot, '"."');
+  Gen(0); {Exit Status}
+  Gen(cmStop);
+  AllocateVariables;
 End;
 
 Procedure Compile;

@@ -23,12 +23,15 @@ Procedure NewName(Name: tName; Cat: tCat; Var Obj: tObj);
 Procedure Find(Name: tName; Var Obj: tObj);
 Procedure OpenScope;
 Procedure CloseScope;
+Procedure FirstVar(Var VRef: tObj);
+Procedure NextVar(Var VRef: tObj);
 
 Implementation
 
 Var 
   Top: tObj;
   Bottom: tObj;
+  CurrObj: tObj;
 
 Procedure InitNameTable;
 Begin
@@ -98,6 +101,25 @@ Begin
     Obj := Obj^.Prev;
   If Obj = Bottom Then
     Error('Undeclared name');
+End;
+
+Procedure FirstVar(Var VRef: tObj);
+Begin
+  CurrObj := Top;
+  NextVar(VRef);
+End;
+
+Procedure NextVar(Var VRef: tObj);
+Begin
+  While (CurrObj <> Bottom) And (CurrObj^.Cat <> catVar) Do
+    CurrObj := CurrObj^.Prev;
+  If CurrObj = Bottom Then
+    VRef := Nil
+  Else
+    Begin
+      VRef := CurrObj;
+      CurrObj := CurrObj^.Prev;
+    End
 End;
 
 End.

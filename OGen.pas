@@ -16,6 +16,7 @@ Procedure GenMax;
 Procedure GenOdd;
 Procedure GenComp(Op: tLex);
 Procedure GenAddr(X: tObj);
+Procedure Fixup(A: integer);
 
 Implementation
 
@@ -87,6 +88,25 @@ Begin
     lexGE: Gen(cmIfLT);
     lexGT: Gen(cmIfLE);
   End;
+End;
+
+Procedure GenAddr(X: tObj);
+Begin
+  Gen(X^.Val);
+  X^.Val := PC + 1;
+End;
+
+Procedure Fixup(A: integer);
+
+Var 
+  temp: integer;
+Begin
+  While A > 0 Do
+    Begin
+      temp := M[A - 2];
+      M[A - 2] := PC;
+      A := temp;
+    End;
 End;
 
 End.
