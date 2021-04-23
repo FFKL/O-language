@@ -73,12 +73,12 @@ Begin
       Read(f, Ch);
       If Ch <> chTab Then
         Begin
-          Write (Ch);
+          Write(Ch);
           Pos := Pos+1;
         End
       Else
         Repeat
-          Write (' ');
+          Write(' ');
           Pos := Pos + 1;
         Until Pos Mod TabSize = 0;
     End;

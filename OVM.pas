@@ -176,12 +176,13 @@ Begin
               M[PC] := cmStop;
             End;
         End;
-      WriteLn;
-      If SP < MemSize Then
-        WriteLn('Return code ', M[SP]);
-      Write('Press ENTER');
-      ReadLn;
+      Cmd := M[PC];
     End;
+  WriteLn;
+  If SP < MemSize Then
+    WriteLn('Return code ', M[SP]);
+  Write('Press ENTER');
+  ReadLn;
 End;
 
 End.
