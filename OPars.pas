@@ -229,6 +229,63 @@ Begin
     Expected('"("');
 End;
 
+Procedure WhileStatement;
+
+Var 
+  WhilePC: integer;
+  CondPC: integer;
+Begin
+  WhilePC := PC;
+  Check(lexWHILE, 'WHILE');
+  BoolExpression;
+  CondPC := PC;
+  Check(lexDO, 'DO');
+  StatSeq;
+  Check(lexEND, 'END');
+  Gen(WhilePC);
+  Gen(cmGOTO);
+  Fixup(CondPC);
+End;
+
+Procedure IfStatement;
+
+Var 
+  CondPC: integer;
+  LastGOTO: integer;
+Begin
+  Check(lexIF, 'IF');
+  LastGOTO := 0;
+  BoolExpression;
+  CondPC := PC;
+  Check(lexTHEN, 'THEN');
+  StatSeq;
+  While Lex = lexELSIF Do
+    Begin
+      Gen(LastGOTO);
+      Gen(cmGOTO);
+      LastGOTO := PC;
+      NextLex;
+      Fixup(CondPC);
+      BoolExpression;
+      CondPC := PC;
+      Check(lexTHEN, 'THEN');
+      StatSeq;
+    End;
+  If Lex = lexELSE Then
+    Begin
+      Gen(LastGOTO);
+      Gen(cmGOTO);
+      LastGOTO := PC;
+      NextLex;
+      Fixup(CondPC);
+      StatSeq;
+    End
+  Else
+    Fixup(CondPC);
+  Check(lexEND, 'END');
+  Fixup(LastGOTO);
+End;
+
 Procedure Statement;
 
 Var 
