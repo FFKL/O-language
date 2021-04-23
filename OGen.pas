@@ -4,6 +4,8 @@ Unit OGen;
 
 Interface
 
+Uses OTable, OScan;
+
 Var 
   PC: integer;
 

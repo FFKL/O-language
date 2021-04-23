@@ -4,11 +4,10 @@ Unit OPars;
 Interface
 Procedure Compile;
 Procedure StatSeq;
-forward;
 
 Implementation
 
-Uses OScan, OError, OGen;
+Uses OScan, OError, OGen, OTable, OVM;
 
 Const 
   spABS = 1;
@@ -23,7 +22,28 @@ Const
   spOutInt = 10;
   spOutLn = 11;
 
-Procedure Check(Target: tLex, Message: String);
+Procedure Expression(Var T: tType);
+Forward;
+
+Procedure ParseType;
+
+Var 
+  TypeRef: tObj;
+Begin
+  If Lex <> lexName Then
+    Expected('name')
+  Else
+    Begin
+      Find(Name, TypeRef);
+      If TypeRef^.Cat <> catType Then
+        Expected('type name')
+      Else If TypeRef^.Typ <> typInt Then
+             Expected('integer type');
+      NextLex;
+    End;
+End;
+
+Procedure Check(Target: tLex; Message: String);
 Begin
   If Lex <> Target Then
     Expected(Message)
@@ -126,7 +146,7 @@ Var
   X: tObj;
 Begin
   If Lex <> lexName Then
-    Expected('name');
+    Expected('name')
   Else
     Begin
       Find(Name, X);
@@ -149,6 +169,55 @@ Begin
     End
   Else
     Expected('":="');
+End;
+
+(* ["+" | "-"] (Integer | Name) *)
+Procedure ConstExpr(Var Value: integer);
+
+Var 
+  NameTableRecord: tObj;
+  Operation: tLex;
+Begin
+  Operation := lexPlus;
+  If Lex In [lexPlus, lexMinus] Then
+    Begin
+      Operation := Lex;
+      NextLex;
+    End;
+  If Lex = lexNum Then
+    Begin
+      Value := Num;
+      NextLex;
+    End
+  Else If Lex = lexName Then
+         Begin
+           Find(Name, NameTableRecord);
+           If NameTableRecord^.Cat = catGuard Then
+             Error('There is no way to define a constant through it itself' )
+           Else If NameTableRecord^.Cat = catGuard Then
+                  Expected('constant name')
+           Else
+             Value := NameTableRecord^.Val;
+           NextLex;
+         End
+  Else
+    Expected('constant expression');
+  If Operation = lexMinus Then
+    Value := -Value;
+End;
+
+(* Name "=" ConstExpression *)
+Procedure ConstDecl;
+
+Var 
+  ConstRef: tObj;
+Begin
+  NewName(Name, catGuard, ConstRef);
+  NextLex;
+  Check(lexEQ, '"="');
+  ConstExpr(ConstRef^.Val);
+  ConstRef^.Typ := typInt; {Only integer is present}
+  ConstRef^.Cat := catConst;
 End;
 
 Procedure StProc(P: integer);
@@ -456,55 +525,6 @@ Begin
       GenComp(Op);
       T := typBool;
     End;
-End;
-
-(* ["+" | "-"] (Integer | Name) *)
-Procedure ConstExpr(Var Value: integer);
-
-Var 
-  NameTableRecord: tObj;
-  Operation: tLex;
-Begin
-  Operation := lexPlus;
-  If Lex In [lexPlus, lexMinus] Then
-    Begin
-      Operation := Lex;
-      NextLex;
-    End;
-  If Lex = lexNum Then
-    Begin
-      Value := Num;
-      NextLex;
-    End
-  Else If Lex = lexName Then
-         Begin
-           Find(Name, NameTableRecord);
-           If NameTableRecord^.Cat = catGuard Then
-             Error('There is no way to define a constant through it itself' )
-           Else If NameTableRecord^.Cat = catGuard Then
-                  Expected('constant name')
-           Else
-             Value := NameTableRecord^.Val;
-           NextLex;
-         End
-  Else
-    Expected('constant expression');
-  If Operation = lexMinus Then
-    Value := -Value;
-End;
-
-(* Name "=" ConstExpression *)
-Procedure ConstDecl;
-
-Var 
-  ConstRef: tObj;
-Begin
-  NewName(Name, catGuard, ConstRef);
-  NextLex;
-  Check(lexEQ, '"="');
-  ConstExpr(ConstRef^.Val);
-  ConstRef^.Typ := typInt; {Only integer is present}
-  ConstRef^.Cat := catConst;
 End;
 
 (* Name {"," Name} ":" Type *)

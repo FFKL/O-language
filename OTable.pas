@@ -3,7 +3,7 @@ Unit OTable;
 
 Interface
 
-Uses OScan;
+Uses OScan, OError;
 
 Type 
   tCat = (catConst, catVar, catType, catStProc, catModule, catGuard);

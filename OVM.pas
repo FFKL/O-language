@@ -1,7 +1,7 @@
 
 Unit OVM; {O Virtual Machine}
 
-Interface;
+Interface
 
 Const 
   MemSize = 8 * 1024;
@@ -161,7 +161,7 @@ Begin
                 Begin
                   SP := SP - 1;
                   Write('?');
-                  ReadIn(M[SP]);
+                  ReadLn(M[SP]);
                 End;
           cmOut:
                  Begin
@@ -178,8 +178,10 @@ Begin
         End;
       WriteLn;
       If SP < MemSize Then
-        WriteLn('Return code', M[SP]);
+        WriteLn('Return code ', M[SP]);
       Write('Press ENTER');
       ReadLn;
     End;
 End;
+
+End.
