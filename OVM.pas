@@ -48,7 +48,6 @@ Var
   PC: integer;
   SP: integer;
   Cmd: integer;
-  Buf: integer;
 Begin
   PC := 0;
   SP := MemSize;
@@ -104,12 +103,11 @@ Begin
                  End;
           cmDrop:
                   SP := SP + 1;
-          {TODO: change to xor algorithm}
           cmSwap:
                   Begin
-                    Buf := M[SP];
-                    M[SP] := M[SP + 1];
-                    M[SP + 1] := Buf;
+                    M[SP] := M[SP] XOR M[SP + 1];
+                    M[SP + 1] := M[SP + 1] XOR M[SP];
+                    M[SP] := M[SP] XOR M[SP + 1];
                   End;
           cmOver:
                   Begin
