@@ -1,0 +1,23 @@
+      IN
+      IN
+
+Loop: OVER
+      OVER
+      Quit
+      IFEQ
+      OVER
+      OVER
+      NoSwap
+      IFLT
+      SWAP
+NoSwap:
+      OVER
+      SUB
+      Loop
+      GOTO
+
+Quit: DROP
+      0
+      OUT
+      OUTLN
+      STOP
