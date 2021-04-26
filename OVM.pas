@@ -70,7 +70,7 @@ Begin
           cmSub:
                  Begin
                    SP := SP + 1;
-                   M[SP] := M[SP] + M[SP - 1];
+                   M[SP] := M[SP] - M[SP - 1];
                  End;
           cmMult:
                   Begin
