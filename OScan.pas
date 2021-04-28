@@ -11,7 +11,7 @@ Type
   tLex = (lexNone, lexName, lexNum,
           lexMODULE, lexIMPORT, lexBEGIN, lexEND,
           lexCONST, lexVAR, lexWHILE, lexDO,
-          lexIF, lexTHEN, lexELSIF, lexELSE,
+          lexIF, lexTHEN, lexELSIF, lexELSE, lexPROCEDURE,
           lexMult, lexDIV, lexMOD, lexPlus, lexMinus,
           lexEQ, lexNE, lexLT, lexLE, lexGT, lexGE,
           lexDot, lexComma, lexColon, lexSemi, lexAss,
@@ -92,7 +92,7 @@ Begin
   EnterKW('OF', lexNone);
   EnterKW('OR', lexNone);
   EnterKW('POINTER', lexNone);
-  EnterKW('PROCEDURE', lexNone);
+  EnterKW('PROCEDURE', lexPROCEDURE);
   EnterKW('RECORD', lexNone);
   EnterKW('REPEAT', lexNone);
   EnterKW('RETURN', lexNone);

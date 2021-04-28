@@ -6,7 +6,7 @@ Interface
 Uses OScan, OError;
 
 Type 
-  tCat = (catConst, catVar, catType, catStProc, catModule, catGuard);
+  tCat = (catConst, catVar, catProc, catType, catStProc, catModule, catGuard);
   tType = (typNone, typInt, typBool);
   tObj = ^tObjRec;
   tObjRec = Record

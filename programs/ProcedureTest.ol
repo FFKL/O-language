@@ -1,0 +1,9 @@
+MODULE ProcTest;
+
+PROCEDURE Proc;
+BEGIN
+END Proc;
+
+BEGIN
+
+END ProcTest.

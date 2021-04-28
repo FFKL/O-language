@@ -557,10 +557,37 @@ Begin
   ParseType;
 End;
 
-(* {CONST {ConstantsDeclaration ";"} | VAR{VariablesDeclaration ";"}} *)
+Procedure ProcDecl;
+
+Var 
+  ProcRef: tObj;
+Begin
+  If Lex <> lexName Then
+    Expected('procedure name')
+  Else
+    Begin
+      NewName(Name, catProc, ProcRef);
+      ProcRef^.Typ := typNone;
+      ProcRef^.Val := PC;
+      NextLex;
+    End;
+  Check(lexSemi, '";"');
+  Check(lexBEGIN, 'BEGIN');
+  Check(lexEND, 'END');
+  If Lex <> lexName Then
+    Expected('procedure name')
+  Else If Name <> ProcRef^.Name Then
+         Expected('procedure name "' + ProcRef^.Name + '"')
+  Else
+    NextLex;
+End;
+
+(* { CONST {ConstantsDeclaration ";"} *)
+(* | VAR{VariablesDeclaration ";"} *)
+(* | PROCEDURE{ProcedureDeclaration ";"} } *)
 Procedure DeclSeq;
 Begin
-  While Lex In [lexCONST, lexVAR] Do
+  While Lex In [lexCONST, lexVAR, lexPROCEDURE] Do
     Begin
       If Lex = lexCONST Then
         Begin
@@ -571,14 +598,20 @@ Begin
               Check(lexSemi, '";"');
             End;
         End
+      Else If Lex = lexVAR Then
+             Begin
+               NextLex;
+               While Lex = lexName Do
+                 Begin
+                   VarDecl;
+                   Check(lexSemi, '";"');
+                 End;
+             End
       Else
         Begin
           NextLex;
-          While Lex = lexName Do
-            Begin
-              VarDecl;
-              Check(lexSemi, '";"');
-            End;
+          ProcDecl;
+          Check(lexSemi, '";"');
         End;
     End;
 End;
