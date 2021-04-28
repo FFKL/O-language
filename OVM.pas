@@ -35,6 +35,21 @@ Const
   cmOut   = -22;
   cmOutLn = -23;
 
+  {Procedure Call}
+  cmCall  = -24;
+  cmRet   = -25;
+  {Procedure Memory}
+  cmEnter = -26;
+  cmLeave = -27;
+  {Base Pointer}
+  cmGetBP = -28;
+  cmSetBP = -29;
+  {Local Variables}
+  cmLLoad = -30;
+  cmLSave = -31;
+  {Stack Pointer}
+  cmGetSP = -32;
+
 Var 
   M: array [0..MemSize - 1] Of integer;
 
@@ -47,6 +62,7 @@ Procedure Run;
 Var 
   PC: integer;
   SP: integer;
+  BP: integer;
   Cmd: integer;
 Begin
   PC := 0;
