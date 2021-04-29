@@ -282,8 +282,14 @@ Begin
   End;
 End;
 
+Procedure Proc(NameRef: tObj);
+Begin
+  Gen(NameRef^.Val);
+  Gen(cmCall);
+End;
+
 (* Name ["(" {Expression | Variable} ")"] *)
-Procedure CallStatement(P: integer);
+Procedure StProcCallStatement(P: integer);
 Begin
   Check(lexName, 'procedure name');
   If Lex = lexLPar Then
@@ -296,6 +302,18 @@ Begin
          StProc(P)
   Else
     Expected('"("');
+End;
+
+Procedure ProcCallStatement(NameRef: tObj);
+Begin
+  Check(lexName, 'procedure name');
+  If Lex = lexLPar Then
+    Begin
+      NextLex;
+      Proc(NameRef);
+      Check(lexRPar, '")"');
+    End
+  Else Proc(NameRef);
 End;
 
 Procedure WhileStatement;
@@ -377,7 +395,9 @@ Begin
         AssignmentStatement
       Else If (X^.Cat = catStProc) And (X^.Typ = typNone)
              Then
-             CallStatement(X^.Val)
+             StProcCallStatement(X^.Val)
+      Else If (X^.Cat = catProc) Then
+             ProcCallStatement(X)
       Else
         Expected('variable or procedure designation');
     End
