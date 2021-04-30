@@ -184,6 +184,12 @@ Begin
                  End;
           cmOutLn:
                    WriteLn;
+          cmCall:
+                  Begin
+                    PC := PC XOR M[SP];
+                    M[SP] := M[SP] XOR PC;
+                    PC := PC XOR M[SP];
+                  End;
           Else
             Begin
               WriteLn('Unacceptable operation code');

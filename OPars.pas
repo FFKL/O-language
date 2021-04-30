@@ -466,9 +466,7 @@ Begin
   If Lex In [lexMult, lexDIV, lexMOD] Then
     Begin
       If T <> typInt Then
-        Error(
-        'The type of the operation is incompatible with the type of the operand'
-        );
+        Error('Mismatched operation and operand types');
       Repeat
         Op := Lex;
         NextLex;
@@ -506,9 +504,7 @@ Begin
   If Lex In [lexPlus, lexMinus] Then
     Begin
       If T <> typInt Then
-        Error(
-        'The type of the operation is incompatible with the type of the operand'
-        );
+        Error('Mismatched operation and operand types');
       Repeat
         Op := Lex;
         NextLex;
@@ -535,9 +531,7 @@ Begin
     Begin
       Op := Lex;
       If T <> typInt Then
-        Error(
-        'The type of the operation is incompatible with the type of the operand'
-        );
+        Error('Mismatched operation and operand types');
       NextLex;
       SimpleExpr(T);
       If T <> typInt Then
@@ -593,6 +587,10 @@ Begin
     End;
   Check(lexSemi, '";"');
   Check(lexBEGIN, 'BEGIN');
+  OpenScope;
+  StatSeq;
+  CloseScope;
+  Gen(cmGOTO);
   Check(lexEND, 'END');
   If Lex <> lexName Then
     Expected('procedure name')
@@ -604,10 +602,9 @@ End;
 
 (* { CONST {ConstantsDeclaration ";"} *)
 (* | VAR{VariablesDeclaration ";"} *)
-(* | PROCEDURE{ProcedureDeclaration ";"} } *)
 Procedure DeclSeq;
 Begin
-  While Lex In [lexCONST, lexVAR, lexPROCEDURE] Do
+  While Lex In [lexCONST, lexVAR] Do
     Begin
       If Lex = lexCONST Then
         Begin
@@ -618,22 +615,34 @@ Begin
               Check(lexSemi, '";"');
             End;
         End
-      Else If Lex = lexVAR Then
-             Begin
-               NextLex;
-               While Lex = lexName Do
-                 Begin
-                   VarDecl;
-                   Check(lexSemi, '";"');
-                 End;
-             End
       Else
         Begin
           NextLex;
-          ProcDecl;
-          Check(lexSemi, '";"');
+          While Lex = lexName Do
+            Begin
+              VarDecl;
+              Check(lexSemi, '";"');
+            End;
         End;
     End;
+End;
+
+(* ProcedureDeclaration ";" {ProcedureDeclaration ";"} *)
+Procedure ProcSeq;
+
+Var 
+  SkipProcSequenceGOTO: integer;
+Begin
+  Gen(0);
+  Gen(cmGOTO);
+  SkipProcSequenceGOTO := PC;
+  While Lex = lexPROCEDURE Do
+    Begin
+      NextLex;
+      ProcDecl;
+      Check(lexSemi, '";"');
+    End;
+  Fixup(SkipProcSequenceGOTO);
 End;
 
 (* Statement {";" Statement} *)
@@ -683,6 +692,8 @@ Begin
   If Lex = lexIMPORT Then
     Import;
   DeclSeq;
+  If Lex = lexPROCEDURE Then
+    ProcSeq;
   If Lex = lexBEGIN Then
     Begin
       NextLex;
