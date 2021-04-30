@@ -571,6 +571,48 @@ Begin
   ParseType;
 End;
 
+Procedure FormalParametersSection;
+
+Var 
+  NameRef: tObj;
+Begin
+  If Lex <> lexName Then
+    Expected('name')
+  Else
+    Begin
+      NewName(Name, catVar, NameRef);
+      NameRef^.Typ := typInt; {Only integer is present}
+      NextLex;
+    End;
+  While Lex = lexComma Do
+    Begin
+      NextLex;
+      If Lex <> lexName Then
+        Expected('name')
+      Else
+        Begin
+          NewName(Name, catVar, NameRef);
+          NameRef^.Typ := typInt; {Only integer is present}
+          NextLex;
+        End;
+    End;
+  Check(lexColon, '":"');
+  ParseType;
+End;
+
+Procedure FormalParameters;
+Begin
+  If Lex = lexName Then
+    Begin
+      FormalParametersSection;
+      While Lex = lexSemi Do
+        Begin
+          NextLex;
+          FormalParametersSection;
+        End;
+    End;
+End;
+
 Procedure ProcDecl;
 
 Var 
@@ -585,9 +627,15 @@ Begin
       ProcRef^.Val := PC;
       NextLex;
     End;
+  OpenScope;
+  If Lex = lexLPar Then
+    Begin
+      NextLex;
+      FormalParameters;
+      Check(lexRPar, '")"');
+    End;
   Check(lexSemi, '";"');
   Check(lexBEGIN, 'BEGIN');
-  OpenScope;
   StatSeq;
   CloseScope;
   Gen(cmGOTO);

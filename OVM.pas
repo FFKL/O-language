@@ -66,6 +66,7 @@ Var
   Cmd: integer;
 Begin
   PC := 0;
+  BP := 0;
   SP := MemSize;
   Cmd := M[PC];
   While Cmd <> cmStop Do

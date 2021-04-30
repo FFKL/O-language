@@ -5,13 +5,13 @@ IMPORT In, Out;
 CONST
   Two = 2;
 
-PROCEDURE Proc;
+PROCEDURE Proc(a, b: INTEGER; d: INTEGER);
 BEGIN
-  Out.Int(Two + Two, 1);
+  Out.Int(a + b, d);
   Out.Ln;
 END Proc;
 
 BEGIN
-  Proc;
-  Proc;
+  Proc(1, 3, 1);
+  Proc(4, 5, 1);
 END ProcTest.
