@@ -190,6 +190,13 @@ Begin
                     M[SP] := M[SP] XOR PC;
                     PC := PC XOR M[SP];
                   End;
+          cmLLoad:
+                   M[SP] := M[BP - M[SP]];
+          cmLSave:
+                   Begin
+                     M[BP - M[SP + 1]] := M[SP];
+                     SP := SP + 2;
+                   End;
           Else
             Begin
               WriteLn('Unacceptable operation code');
