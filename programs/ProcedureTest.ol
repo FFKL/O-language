@@ -5,13 +5,34 @@ IMPORT In, Out;
 CONST
   Two = 2;
 
-PROCEDURE Proc(a, b: INTEGER; d: INTEGER);
+PROCEDURE PrintInt(val: INTEGER; indent: INTEGER);
 BEGIN
-  Out.Int(a + b, d);
+  Out.Int(val, indent);
   Out.Ln;
-END Proc;
+END PrintInt;
+
+PROCEDURE Add(a, b: INTEGER);
+BEGIN
+  PrintInt(a + b, 0);
+END Add;
+
+PROCEDURE Sub(a, b: INTEGER);
+BEGIN
+  PrintInt(a - b, 0);
+END Sub;
+
+PROCEDURE SubAndAdd(a, b: INTEGER);
+BEGIN
+  Sub(a, b);
+  Add(a, b);
+END SubAndAdd;
 
 BEGIN
-  Proc(1, 3, 1);
-  Proc(4, 5, 1);
+  Add(1, 3);
+  Add(4, 5);
+
+  Sub(3, 10);
+  Sub(40, 23);
+
+  SubAndAdd(10, 13);
 END ProcTest.
