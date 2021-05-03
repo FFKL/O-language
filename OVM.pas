@@ -191,6 +191,11 @@ Begin
                     M[SP] := M[SP] XOR PC;
                     PC := PC XOR M[SP];
                   End;
+          cmRet:
+                 Begin
+                   PC := M[SP - 1];
+                   SP := SP + M[SP] + 2;
+                 End;
           cmGetBP:
                    Begin
                      SP := SP - 1;
