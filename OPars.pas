@@ -140,32 +140,40 @@ Begin
 End;
 
 (* Variable = Name. *)
-Procedure Variable;
-
-Var 
-  X: tObj;
+Procedure Variable(Var X: tObj);
 Begin
   If Lex <> lexName Then
     Expected('name')
   Else
     Begin
       Find(Name, X);
-      If X^.Cat <> catVar Then
+      If X^.Cat = catVar Then
+        GenAddr(X)
+      Else If X^.Cat = catLVar Then
+             Gen(X^.Val)
+      Else
         Expected('variable name');
-      GenAddr(X);
       NextLex;
     End;
 End;
 
 (* Variable ":=" Expression *)
 Procedure AssignmentStatement;
+
+Var 
+  TargetVar: tObj;
 Begin
-  Variable;
+  Variable(TargetVar);
   If Lex = lexAss Then
     Begin
       NextLex;
       IntExpression;
-      Gen(cmSave);
+      If TargetVar^.Cat = catVar Then
+        Gen(cmSave)
+      Else If TargetVar^.Cat = catLVar Then
+             Gen(cmLSave)
+      Else
+        Error('Assignemnt target is not variable');
     End
   Else
     Expected('":="');
@@ -224,11 +232,12 @@ Procedure StProc(P: integer);
 
 Var 
   c: integer;
+  X: tObj;
 Begin
   Case P Of 
     spDEC:
            Begin
-             Variable;
+             Variable(X);
              Gen(cmDup);
              Gen(cmLoad);
              If Lex = lexComma Then
@@ -243,7 +252,7 @@ Begin
            End;
     spINC:
            Begin
-             Variable;
+             Variable(X);
              Gen(cmDup);
              Gen(cmLoad);
              If Lex = lexComma Then
@@ -260,7 +269,7 @@ Begin
       { empty };
     spInInt:
              Begin
-               Variable;
+               Variable(X);
                Gen(cmIn);
                Gen(cmSave);
              End;
@@ -304,6 +313,7 @@ Begin
   Gen(cmCall);
 End;
 
+{TODO: add params length check}
 Procedure ProcArgs;
 Begin
   IntExpression;
@@ -435,6 +445,13 @@ Begin
           T := X^.Typ;
           NextLex;
         End
+      Else If X^.Cat = catLVar Then
+             Begin
+               Gen(X^.Val);
+               Gen(cmLLoad);
+               T := X^.Typ;
+               NextLex;
+             End
       Else If X^.Cat = catConst Then
              Begin
                GenConst(X^.Val);
@@ -449,6 +466,7 @@ Begin
                StFunc(X^.Val, T);
                Check(lexRPar, '")"');
              End
+      {TODO: add procedure support}
       Else
         Expected('variable, constant or procedure-function');
     End
@@ -583,7 +601,7 @@ Begin
   ParseType;
 End;
 
-Procedure FormalParametersSection;
+Procedure FormalParametersSection(Var ParamsAmount: integer);
 
 Var 
   NameRef: tObj;
@@ -592,8 +610,10 @@ Begin
     Expected('name')
   Else
     Begin
-      NewName(Name, catVar, NameRef);
+      NewName(Name, catLVar, NameRef);
       NameRef^.Typ := typInt; {Only integer is present}
+      NameRef^.Val := ParamsAmount;
+      ParamsAmount := ParamsAmount + 1;
       NextLex;
     End;
   While Lex = lexComma Do
@@ -603,8 +623,10 @@ Begin
         Expected('name')
       Else
         Begin
-          NewName(Name, catVar, NameRef);
+          NewName(Name, catLVar, NameRef);
           NameRef^.Typ := typInt; {Only integer is present}
+          NameRef^.Val := ParamsAmount;
+          ParamsAmount := ParamsAmount + 1;
           NextLex;
         End;
     End;
@@ -612,15 +634,15 @@ Begin
   ParseType;
 End;
 
-Procedure FormalParameters;
+Procedure FormalParameters(Var ParamsAmount: integer);
 Begin
   If Lex = lexName Then
     Begin
-      FormalParametersSection;
+      FormalParametersSection(ParamsAmount);
       While Lex = lexSemi Do
         Begin
           NextLex;
-          FormalParametersSection;
+          FormalParametersSection(ParamsAmount);
         End;
     End;
 End;
@@ -629,7 +651,9 @@ Procedure ProcDecl;
 
 Var 
   ProcRef: tObj;
+  ParamsAmount: integer;
 Begin
+  ParamsAmount := 0;
   If Lex <> lexName Then
     Expected('procedure name')
   Else
@@ -643,14 +667,21 @@ Begin
   If Lex = lexLPar Then
     Begin
       NextLex;
-      FormalParameters;
+      FormalParameters(ParamsAmount);
+      Gen(cmGetBP);
+      Gen(cmGetSP);
+      Gen(ParamsAmount + 1);
+      Gen(cmAdd);
+      Gen(cmSetBP);
       Check(lexRPar, '")"');
     End;
   Check(lexSemi, '";"');
   Check(lexBEGIN, 'BEGIN');
   StatSeq;
+  Gen(cmSetBP);
+  Gen(ParamsAmount);
+  Gen(cmRet);
   CloseScope;
-  Gen(cmGOTO);
   Check(lexEND, 'END');
   If Lex <> lexName Then
     Expected('procedure name')

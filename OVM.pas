@@ -193,7 +193,7 @@ Begin
                   End;
           cmRet:
                  Begin
-                   PC := M[SP - 1];
+                   PC := M[SP + 1];
                    SP := SP + M[SP] + 2;
                  End;
           cmGetBP:
