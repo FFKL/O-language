@@ -208,6 +208,11 @@ Begin
                      M[BP - M[SP + 1]] := M[SP];
                      SP := SP + 2;
                    End;
+          cmGetSP:
+                   Begin
+                     M[SP - 1] := SP;
+                     SP := SP - 1;
+                   End;
           Else
             Begin
               WriteLn('Unacceptable operation code');
