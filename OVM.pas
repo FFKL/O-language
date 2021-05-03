@@ -191,6 +191,16 @@ Begin
                     M[SP] := M[SP] XOR PC;
                     PC := PC XOR M[SP];
                   End;
+          cmGetBP:
+                   Begin
+                     SP := SP - 1;
+                     M[SP] := BP;
+                   End;
+          cmSetBP:
+                   Begin
+                     BP := M[SP];
+                     SP := SP + 1;
+                   End;
           cmLLoad:
                    M[SP] := M[BP - M[SP]];
           cmLSave:
