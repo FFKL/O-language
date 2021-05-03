@@ -17,12 +17,10 @@ Begin
   Count := SP;
   While Count <= MemSize  Do
     Begin
-      Write(M[Count]);
-      Write(' <- ');
+      Write(M[Count], ' <- ');
       Count := Count + 1;
     End;
-  Write('Top');
-  WriteLn;
+  WriteLn('Top');
 End;
 
 End.
