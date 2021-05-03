@@ -282,12 +282,6 @@ Begin
   End;
 End;
 
-Procedure Proc(NameRef: tObj);
-Begin
-  Gen(NameRef^.Val);
-  Gen(cmCall);
-End;
-
 (* Name ["(" {Expression | Variable} ")"] *)
 Procedure StProcCallStatement(P: integer);
 Begin
@@ -304,12 +298,30 @@ Begin
     Expected('"("');
 End;
 
+Procedure Proc(NameRef: tObj);
+Begin
+  Gen(NameRef^.Val);
+  Gen(cmCall);
+End;
+
+Procedure ProcArgs;
+Begin
+  IntExpression;
+  While Lex = lexComma Do
+    Begin
+      NextLex;
+      IntExpression;
+    End;
+End;
+
 Procedure ProcCallStatement(NameRef: tObj);
 Begin
   Check(lexName, 'procedure name');
   If Lex = lexLPar Then
     Begin
       NextLex;
+      If Lex <> lexRPar Then
+        ProcArgs;
       Proc(NameRef);
       Check(lexRPar, '")"');
     End
