@@ -27,7 +27,18 @@ BEGIN
   Add(a, b);
 END SubAndAdd;
 
+PROCEDURE LocalAdd(a, b: INTEGER);
+VAR
+  localAdder: INTEGER;
 BEGIN
+  localAdder := 30;
+  Add(localAdder, a);
+  Add(localAdder, b);
+END LocalAdd;
+
+BEGIN
+  LocalAdd(11, 12);
+
   Add(1, 3);
   Add(4, 5);
 
