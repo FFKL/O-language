@@ -197,6 +197,10 @@ Begin
                    PC := M[SP + 1];
                    SP := SP + M[SP] + 2;
                  End;
+          cmEnter:
+                   SP := SP - M[SP] + 1;
+          cmLeave:
+                   SP := SP + M[SP] + 1;
           cmGetBP:
                    Begin
                      SP := SP - 1;
