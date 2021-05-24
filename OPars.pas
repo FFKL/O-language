@@ -413,7 +413,7 @@ Begin
           Else
             Expected('name from module ' + X^.Name);
         End;
-      If X^.Cat = catVar Then
+      If X^.Cat In [catVar, catLVar] Then
         AssignmentStatement
       Else If (X^.Cat = catStProc) And (X^.Typ = typNone)
              Then
@@ -647,13 +647,51 @@ Begin
     End;
 End;
 
+Procedure ProcVarDecl(Var VarsAmount: integer; ParamsShift: integer);
+
+Const 
+  VarsShift = 2; {Return address + old base pointer}
+
+Var 
+  NameRef: tObj;
+Begin
+  If Lex = lexName Then
+    Begin
+      NewName(Name, catLVar, NameRef);
+      NameRef^.Typ := typInt; {Only integer is present}
+      NameRef^.Val := VarsAmount + ParamsShift + VarsShift;
+      VarsAmount := VarsAmount + 1;
+      NextLex;
+      While Lex = lexComma Do
+        Begin
+          NextLex;
+          If Lex <> lexName Then
+            Expected('name')
+          Else
+            Begin
+              NewName(Name, catLVar, NameRef);
+              NameRef^.Typ := typInt; {Only integer is present}
+              NameRef^.Val := VarsAmount + ParamsShift + VarsShift;
+              VarsAmount := VarsAmount + 1;
+              NextLex;
+            End;
+        End;
+      Check(lexColon, '":"');
+      ParseType;
+    End
+  Else
+    Expected('name');
+End;
+
 Procedure ProcDecl;
 
 Var 
   ProcRef: tObj;
   ParamsAmount: integer;
+  VariablesAmount: integer;
 Begin
   ParamsAmount := 0;
+  VariablesAmount := 0;
   If Lex <> lexName Then
     Expected('procedure name')
   Else
@@ -676,8 +714,18 @@ Begin
       Check(lexRPar, '")"');
     End;
   Check(lexSemi, '";"');
+  If Lex = lexVar Then
+    Begin
+      NextLex;
+      ProcVarDecl(VariablesAmount, ParamsAmount);
+      Check(lexSemi, '";"');
+      Gen(VariablesAmount);
+      Gen(cmEnter);
+    End;
   Check(lexBEGIN, 'BEGIN');
   StatSeq;
+  Gen(VariablesAmount);
+  Gen(cmLeave);
   Gen(cmSetBP);
   Gen(ParamsAmount);
   Gen(cmRet);
