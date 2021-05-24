@@ -10,7 +10,7 @@ Type
   tName = string[NameLen];
   tLex = (lexNone, lexName, lexNum,
           lexMODULE, lexIMPORT, lexBEGIN, lexEND,
-          lexCONST, lexVAR, lexWHILE, lexDO,
+          lexCONST, lexVAR, lexWHILE, lexDO, lexRETURN,
           lexIF, lexTHEN, lexELSIF, lexELSE, lexPROCEDURE,
           lexMult, lexDIV, lexMOD, lexPlus, lexMinus,
           lexEQ, lexNE, lexLT, lexLE, lexGT, lexGE,
@@ -95,7 +95,7 @@ Begin
   EnterKW('PROCEDURE', lexPROCEDURE);
   EnterKW('RECORD', lexNone);
   EnterKW('REPEAT', lexNone);
-  EnterKW('RETURN', lexNone);
+  EnterKW('RETURN', lexRETURN);
   EnterKW('THEN', lexTHEN);
   EnterKW('TO', lexNone);
   EnterKW('TYPE', lexNone);
