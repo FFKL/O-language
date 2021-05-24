@@ -5,4 +5,3 @@ if [[ ! -d dist/ ]]; then
 fi
 
 fpc -ap -o./dist/O ./O.pas
-fpc -ap -o./dist/OAsm ./OAsm.pas
