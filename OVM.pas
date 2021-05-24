@@ -64,6 +64,7 @@ Var
   SP: integer;
   BP: integer;
   Cmd: integer;
+  Temp: integer;
 Begin
   PC := 0;
   BP := 0;
@@ -122,9 +123,9 @@ Begin
                   SP := SP + 1;
           cmSwap:
                   Begin
-                    M[SP] := M[SP] XOR M[SP + 1];
-                    M[SP + 1] := M[SP + 1] XOR M[SP];
-                    M[SP] := M[SP] XOR M[SP + 1];
+                    Temp := M[SP];
+                    M[SP] := M[SP + 1];
+                    M[SP + 1] := Temp;
                   End;
           cmOver:
                   Begin
@@ -187,9 +188,9 @@ Begin
                    WriteLn;
           cmCall:
                   Begin
-                    PC := PC XOR M[SP];
-                    M[SP] := M[SP] XOR PC;
-                    PC := PC XOR M[SP];
+                    Temp := M[SP];
+                    M[SP] := PC;
+                    PC := Temp;
                   End;
           cmRet:
                  Begin
