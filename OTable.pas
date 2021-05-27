@@ -10,6 +10,7 @@ Type
           catConst,
           catVar,
           catLVar,
+          catLVal,
           catProc,
           catType,
           catStProc,
@@ -17,6 +18,13 @@ Type
           catGuard
          );
   tType = (typNone, typInt, typBool);
+  tFPCat = (catFPVar, catFPVal);
+  tFP = ^tFPRec;
+  tFPRec = Record
+    Cat: tFPCat;
+    Typ: tType;
+    Next: tFP;
+  End;
   tObj = ^tObjRec;
   tObjRec = Record
     Name: tName;
@@ -24,11 +32,14 @@ Type
     Typ: tType;
     Val: integer;
     Prev: tObj;
+    ProcFP: tFP;
   End;
 
 Procedure InitNameTable;
 Procedure Enter(N: tName; C: tCat; T: tType; V: integer);
 Procedure NewName(Name: tName; Cat: tCat; Var Obj: tObj);
+Procedure NewProcFP(C: tFPCat; T: tType; Var Obj: tObj);
+Procedure FindProcFP(Position: integer; Var Obj: tObj; Var Param: tFP);
 Procedure Find(Name: tName; Var Obj: tObj);
 Procedure OpenScope;
 Procedure CloseScope;
@@ -58,6 +69,7 @@ Begin
   P^.Typ := T;
   P^.Val := V;
   P^.Prev := Top;
+  P^.ProcFP := Nil;
   Top := P;
 End;
 
@@ -96,10 +108,57 @@ Begin
       Obj^.Cat := Cat;
       Obj^.Val := 0;
       Obj^.Prev := Top;
+      Obj^.ProcFP := Nil;
       Top := Obj;
     End
   Else
     Error('Name already defined');
+End;
+
+Procedure NewProcFP(C: tFPCat; T: tType; Var Obj: tObj);
+
+Var 
+  Param: tFP;
+  Last: tFP;
+Begin
+  If Obj^.Cat = catProc Then
+    Begin
+      If Obj^.ProcFP = Nil Then
+        Begin
+          New(Param);
+          Param^.Cat := C;
+          Param^.Typ := T;
+          Param^.Next := Nil;
+          Obj^.ProcFP := Param;
+        End
+      Else
+        Begin
+          Param := Obj^.ProcFP;
+          While Param^.Next <> Nil Do
+            Param := Param^.Next;
+          Last := Param;
+          New(Param);
+          Param^.Cat := C;
+          Param^.Typ := T;
+          Param^.Next := Nil;
+          Last^.Next := Param;
+        End;
+    End
+  Else
+    Error('Unable to add format parameter to non-Procedure');
+End;
+
+Procedure FindProcFP(Position: integer; Var Obj: tObj; Var Param: tFP);
+
+Var 
+  CurrPosiiton: integer;
+Begin
+  Param := Obj^.ProcFP;
+  If Position <> 1 Then
+    Begin
+      For CurrPosiiton := 2 To Position Do
+        Param := Param^.Next;
+    End;
 End;
 
 Procedure Find(Name: tName; Var Obj: tObj);
