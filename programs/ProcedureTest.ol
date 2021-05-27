@@ -4,6 +4,8 @@ IMPORT In, Out;
 
 CONST
   Two = 2;
+VAR
+  Variable: INTEGER;
 
 PROCEDURE PrintInt(val: INTEGER; indent: INTEGER);
 BEGIN
@@ -27,17 +29,28 @@ BEGIN
   Add(a, b);
 END SubAndAdd;
 
-PROCEDURE LocalAdd(a, b: INTEGER);
+PROCEDURE NestedAssignment(VAR a: INTEGER);
+BEGIN
+  a := 45;
+END NestedAssignment;
+
+PROCEDURE LocalAdd(VAR a: INTEGER; b: INTEGER);
 VAR
   localAdder: INTEGER;
 BEGIN
   localAdder := 30;
   Add(localAdder, a);
   Add(localAdder, b);
+  NestedAssignment(localAdder);
+  PrintInt(localAdder, 0);
+  NestedAssignment(a);
 END LocalAdd;
 
 BEGIN
-  LocalAdd(11, 12);
+  Variable := 3;
+  PrintInt(Variable, 0);
+  LocalAdd(Variable, Variable - 2);
+  PrintInt(Variable, 0);
 
   Add(1, 3);
   Add(4, 5);
