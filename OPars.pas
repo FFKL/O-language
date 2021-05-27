@@ -150,6 +150,11 @@ Begin
       If X^.Cat = catVar Then
         GenAddr(X)
       Else If X^.Cat = catLVar Then
+             Begin
+               Gen(X^.Val);
+               Gen(cmLLoad);
+             End
+      Else If X^.Cat = catLVal Then
              Gen(X^.Val)
       Else
         Expected('variable name');
@@ -171,6 +176,8 @@ Begin
       If TargetVar^.Cat = catVar Then
         Gen(cmSave)
       Else If TargetVar^.Cat = catLVar Then
+             Gen(cmSave)
+      Else If TargetVar^.Cat = catLVal Then
              Gen(cmLSave)
       Else
         Error('Assignemnt target is not variable');
@@ -313,29 +320,76 @@ Begin
   Gen(cmCall);
 End;
 
-{TODO: add params length check}
-Procedure ProcArgs;
+Procedure VarArg;
+
+Var 
+  X: tObj;
 Begin
-  IntExpression;
-  While Lex = lexComma Do
+  If Lex <> lexName Then
+    Expected('name');
+  Find(Name, X);
+  If X^.Cat = catLVar Then
     Begin
-      NextLex;
-      IntExpression;
-    End;
+      Gen(X^.Val);
+      Gen(cmLLoad);
+    End
+  Else If X^.Cat = catLVal Then
+         Begin
+           Gen(cmGetBP);
+           Gen(X^.Val);
+           Gen(cmSub);
+         End
+  Else If X^.Cat = catVar Then
+         Begin
+           GenAddr(X);
+         End
+  Else
+    Expected('variable or value');
+  NextLex;
 End;
 
-Procedure ProcCallStatement(NameRef: tObj);
+Procedure ProcArgs(ProcRef: tObj);
+
+Var 
+  CurrArg: integer;
+  CurrParam: tFP;
+Begin
+  CurrArg := 1;
+  FindProcFP(CurrArg, ProcRef, CurrParam);
+  If CurrParam = Nil Then
+    Error('Arguments and params lengths mismatch');
+  If CurrParam^.Cat = catFPVal Then
+    IntExpression
+  Else
+    VarArg;
+  While Lex = lexComma Do
+    Begin
+      CurrArg := CurrArg + 1;
+      NextLex;
+      FindProcFP(CurrArg, ProcRef, CurrParam);
+      If CurrParam = Nil Then
+        Error('Arguments and params lengths mismatch');
+      If CurrParam^.Cat = catFPVal Then
+        IntExpression
+      Else
+        VarArg;
+    End;
+  If CurrParam^.Next <> Nil Then
+    Error('Arguments and params lengths mismatch');
+End;
+
+Procedure ProcCallStatement(ProcRef: tObj);
 Begin
   Check(lexName, 'procedure name');
   If Lex = lexLPar Then
     Begin
       NextLex;
       If Lex <> lexRPar Then
-        ProcArgs;
-      Proc(NameRef);
+        ProcArgs(ProcRef);
+      Proc(ProcRef);
       Check(lexRPar, '")"');
     End
-  Else Proc(NameRef);
+  Else Proc(ProcRef);
 End;
 
 Procedure WhileStatement;
@@ -413,7 +467,7 @@ Begin
           Else
             Expected('name from module ' + X^.Name);
         End;
-      If X^.Cat In [catVar, catLVar] Then
+      If X^.Cat In [catVar, catLVal, catLVar] Then
         AssignmentStatement
       Else If (X^.Cat = catStProc) And (X^.Typ = typNone)
              Then
@@ -445,10 +499,18 @@ Begin
           T := X^.Typ;
           NextLex;
         End
+      Else If X^.Cat = catLVal Then
+             Begin
+               Gen(X^.Val);
+               Gen(cmLLoad);
+               T := X^.Typ;
+               NextLex;
+             End
       Else If X^.Cat = catLVar Then
              Begin
                Gen(X^.Val);
                Gen(cmLLoad);
+               Gen(cmLoad);
                T := X^.Typ;
                NextLex;
              End
@@ -601,19 +663,34 @@ Begin
   ParseType;
 End;
 
-Procedure FormalParametersSection(Var ParamsAmount: integer);
+Procedure FormalParametersSection(Var ProcRef: tObj; Var ParamsAmount: integer);
 
 Var 
   NameRef: tObj;
+  NameCat: tCat;
+  FPCat: tFPCat;
 Begin
+  If Lex = lexVAR Then
+    Begin
+      NameCat := catLVar;
+      FPCat := catFPVar;
+      NextLex
+    End
+  Else
+    Begin
+      NameCat := catLVal;
+      FPCat := catFPVal;
+    End;
+
   If Lex <> lexName Then
     Expected('name')
   Else
     Begin
-      NewName(Name, catLVar, NameRef);
+      NewName(Name, NameCat, NameRef);
       NameRef^.Typ := typInt; {Only integer is present}
       NameRef^.Val := ParamsAmount;
       ParamsAmount := ParamsAmount + 1;
+      NewProcFP(FPCat, typInt, ProcRef);
       NextLex;
     End;
   While Lex = lexComma Do
@@ -623,10 +700,11 @@ Begin
         Expected('name')
       Else
         Begin
-          NewName(Name, catLVar, NameRef);
+          NewName(Name, NameCat, NameRef);
           NameRef^.Typ := typInt; {Only integer is present}
           NameRef^.Val := ParamsAmount;
           ParamsAmount := ParamsAmount + 1;
+          NewProcFP(FPCat, typInt, ProcRef);
           NextLex;
         End;
     End;
@@ -634,20 +712,20 @@ Begin
   ParseType;
 End;
 
-Procedure FormalParameters(Var ParamsAmount: integer);
+Procedure FormalParameters(Var ProcRef: tObj; Var ParamsAmount: integer);
 Begin
-  If Lex = lexName Then
+  If Lex In [lexName, lexVAR] Then
     Begin
-      FormalParametersSection(ParamsAmount);
+      FormalParametersSection(ProcRef, ParamsAmount);
       While Lex = lexSemi Do
         Begin
           NextLex;
-          FormalParametersSection(ParamsAmount);
+          FormalParametersSection(ProcRef, ParamsAmount);
         End;
     End;
 End;
 
-Procedure ProcVarDecl(Var VarsAmount: integer; ParamsShift: integer);
+Procedure ProcLocalVarsDecl(Var VarsAmount: integer; ParamsShift: integer);
 
 Const 
   VarsShift = 2; {Return address + old base pointer}
@@ -657,7 +735,7 @@ Var
 Begin
   If Lex = lexName Then
     Begin
-      NewName(Name, catLVar, NameRef);
+      NewName(Name, catLVal, NameRef);
       NameRef^.Typ := typInt; {Only integer is present}
       NameRef^.Val := VarsAmount + ParamsShift + VarsShift;
       VarsAmount := VarsAmount + 1;
@@ -669,7 +747,7 @@ Begin
             Expected('name')
           Else
             Begin
-              NewName(Name, catLVar, NameRef);
+              NewName(Name, catLVal, NameRef);
               NameRef^.Typ := typInt; {Only integer is present}
               NameRef^.Val := VarsAmount + ParamsShift + VarsShift;
               VarsAmount := VarsAmount + 1;
@@ -705,7 +783,7 @@ Begin
   If Lex = lexLPar Then
     Begin
       NextLex;
-      FormalParameters(ParamsAmount);
+      FormalParameters(ProcRef, ParamsAmount);
       Gen(cmGetBP);
       Gen(cmGetSP);
       Gen(ParamsAmount + 1);
@@ -717,7 +795,7 @@ Begin
   If Lex = lexVar Then
     Begin
       NextLex;
-      ProcVarDecl(VariablesAmount, ParamsAmount);
+      ProcLocalVarsDecl(VariablesAmount, ParamsAmount);
       Check(lexSemi, '";"');
       Gen(VariablesAmount);
       Gen(cmEnter);
