@@ -22,6 +22,10 @@ Const
   spOutInt = 10;
   spOutLn = 11;
 
+Var 
+  CurrProcedure: tObj;
+  ReturnLastGOTO: Integer;
+
 Procedure Expression(Var T: tType);
 Forward;
 
@@ -449,6 +453,18 @@ Begin
   Fixup(LastGOTO);
 End;
 
+Procedure ReturnStatement;
+Begin
+  Check(lexRETURN, 'RETURN');
+  If CurrProcedure = Nil Then
+    Error('Unable to use return statement outside a procedure');
+  If CurrProcedure^.Typ = typInt Then
+    IntExpression;
+  Gen(ReturnLastGOTO);
+  Gen(cmGOTO);
+  ReturnLastGOTO := PC;
+End;
+
 Procedure Statement;
 
 Var 
@@ -481,6 +497,8 @@ Begin
          IfStatement
   Else If Lex = lexWHILE Then
          WhileStatement
+  Else If Lex = lexRETURN Then
+         ReturnStatement
 End;
 
 (* Name ["(" Expression | Type ")"] | Integer | "(" Expression ")" *)
@@ -528,7 +546,11 @@ Begin
                StFunc(X^.Val, T);
                Check(lexRPar, '")"');
              End
-      {TODO: add procedure support}
+      Else If (X^.Cat = catProc) And (X^.Typ <> typNone) Then
+             Begin
+               ProcCallStatement(X);
+               T := X^.Typ;
+             End
       Else
         Expected('variable, constant or procedure-function');
     End
@@ -777,6 +799,7 @@ Begin
       NewName(Name, catProc, ProcRef);
       ProcRef^.Typ := typNone;
       ProcRef^.Val := PC;
+      CurrProcedure := ProcRef;
       NextLex;
     End;
   OpenScope;
@@ -784,14 +807,25 @@ Begin
     Begin
       NextLex;
       FormalParameters(ProcRef, ParamsAmount);
-      Gen(cmGetBP);
-      Gen(cmGetSP);
-      Gen(ParamsAmount + 1);
-      Gen(cmAdd);
-      Gen(cmSetBP);
       Check(lexRPar, '")"');
     End;
+  If Lex = lexColon Then
+    Begin
+      NextLex;
+      ParseType;
+      ProcRef^.Typ := typInt;
+    End;
   Check(lexSemi, '";"');
+  If (ParamsAmount = 0) And (ProcRef^.Typ <> typNone) Then
+    Gen(cmDup);
+  Gen(cmGetBP);
+  Gen(cmGetSP);
+  If (ParamsAmount = 0) And (ProcRef^.Typ <> typNone) Then
+    Gen(2)
+  Else
+    Gen(ParamsAmount + 1);
+  Gen(cmAdd);
+  Gen(cmSetBP);
   If Lex = lexVar Then
     Begin
       NextLex;
@@ -802,12 +836,31 @@ Begin
     End;
   Check(lexBEGIN, 'BEGIN');
   StatSeq;
+  Fixup(ReturnLastGOTO);
+  If ProcRef^.Typ <> typNone Then
+    Begin
+      Gen(cmGetBP);
+      Gen(cmSwap);
+      Gen(cmSave);
+    End;
   Gen(VariablesAmount);
   Gen(cmLeave);
   Gen(cmSetBP);
-  Gen(ParamsAmount);
-  Gen(cmRet);
+  If ParamsAmount = 0 Then
+    Gen(cmGOTO)
+  Else If (ProcRef^.Typ <> typNone) Then
+         Begin
+           Gen(ParamsAmount - 1);
+           Gen(cmRet);
+         End
+  Else
+    Begin
+      Gen(ParamsAmount);
+      Gen(cmRet);
+    End;
   CloseScope;
+  ReturnLastGOTO := 0;
+  CurrProcedure := Nil;
   Check(lexEND, 'END');
   If Lex <> lexName Then
     Expected('procedure name')
@@ -931,6 +984,7 @@ End;
 
 Procedure Compile;
 Begin
+  ReturnLastGOTO := 0;
   InitNameTable;
   OpenScope;
   Enter('ABS', catStProc, typInt, spABS);
