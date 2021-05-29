@@ -46,11 +46,27 @@ BEGIN
   NestedAssignment(a);
 END LocalAdd;
 
+PROCEDURE Function(a: INTEGER): INTEGER;
+VAR
+  sum: INTEGER;
 BEGIN
-  Variable := 3;
+  sum := a + 1;
+  IF sum >= 3 THEN
+    RETURN sum;
+  END;
+  RETURN sum + 1;
+END Function;
+
+BEGIN
+  Variable := Function(2);
   PrintInt(Variable, 0);
+  
+  Out.Ln;
+  
   LocalAdd(Variable, Variable - 2);
   PrintInt(Variable, 0);
+
+  Out.Ln;
 
   Add(1, 3);
   Add(4, 5);
