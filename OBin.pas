@@ -1,0 +1,54 @@
+
+Unit OBin;
+
+Interface
+
+Procedure Generate;
+Procedure Load;
+
+Implementation
+
+Uses OGen, OVM, OError;
+
+Const 
+  DefaultFilename = 'out';
+
+Procedure Generate;
+
+Var 
+  binFile: File Of integer;
+  currCmd: integer;
+Begin
+  Assign(binFile, DefaultFilename);
+  ReWrite(binFile);
+  For currCmd := 0 To (PC - 1) Do
+    Write(binFile, M[currCmd]);
+  Close(binFile);
+End;
+
+
+Procedure Load;
+
+Var 
+  binFile: File Of integer;
+  cmd: integer;
+  loaderPC: integer;
+Begin
+  loaderPC := 0;
+  Assign(binFile, DefaultFilename);
+  {$i-}
+  Reset(binFile);
+  {$i+}
+  If IOResult <> 0 Then
+    Error('Input file was not found');
+  While Not eof(binFile) 
+    Do
+    Begin
+      Read(binFile, cmd);
+      M[loaderPC] := cmd;
+      loaderPC := loaderPC + 1
+    End;
+  Close(binFile);
+End;
+
+End.

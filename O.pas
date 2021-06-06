@@ -1,24 +1,9 @@
 
 Program O;
 
-Uses OText, OPars, OScan, OVM, OGen;
-
-Procedure Init;
-Begin
-  ResetText;
-  InitScan;
-  InitGen;
-End;
-
-Procedure Done;
-Begin
-  CloseText;
-End;
+Uses OVM, OBin;
 
 Begin
-  WriteLn('O compiler');
-  Init;
-  Compile;
+  OBin.Load;
   Run;
-  Done;
 End.
