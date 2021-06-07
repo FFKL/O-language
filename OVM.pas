@@ -231,11 +231,10 @@ Begin
         End;
       Cmd := M[PC];
     End;
-  WriteLn;
   If SP < MemSize Then
-    WriteLn('Return code ', M[SP]);
-  Write('Press ENTER');
-  ReadLn;
+    ExitCode := M[SP]
+  Else
+    ExitCode := 1;
 End;
 
 End.
