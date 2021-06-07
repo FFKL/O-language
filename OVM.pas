@@ -176,7 +176,7 @@ Begin
           cmIn:
                 Begin
                   SP := SP - 1;
-                  Write('?');
+                  Write('> ');
                   ReadLn(M[SP]);
                 End;
           cmOut:
