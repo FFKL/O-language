@@ -3,7 +3,7 @@ MODULE TowerOfHanoi;
 IMPORT In, Out;
 
 VAR
-  n : INTEGER;
+  n: INTEGER;
 
 PROCEDURE Print(X, Y: INTEGER);
 BEGIN
