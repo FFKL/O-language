@@ -4,10 +4,10 @@ MODULE Primes;
 IMPORT In, Out;
 
 VAR
-  n, c, i, d : INTEGER;
+  n, c, i, d: INTEGER;
 BEGIN
   In.Open;
-  In.Int (n);
+  In.Int(n);
   c := 0; (* Counter *)
   i := 2;
   WHILE i <= n DO
