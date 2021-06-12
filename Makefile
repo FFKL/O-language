@@ -1,6 +1,6 @@
-PROG_COMPILER = OCompiler
-PROG_VM = O
-PROG_ASM = OAsm
+PROG_COMPILER = compiler/OCompiler
+PROG_VM = vm/O
+PROG_ASM = asm/OAsm
 
 SRC = src
 BUILD = build
