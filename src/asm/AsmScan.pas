@@ -30,7 +30,7 @@ Procedure NextLex;
 
 Implementation
 
-Uses AsmText, OError, OVM;
+Uses AsmText, AsmError, OVM;
 
 Const 
   CmdNum = 23;

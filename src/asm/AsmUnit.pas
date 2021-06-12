@@ -7,13 +7,10 @@ Procedure Assemble;
 
 Implementation
 
-Uses AsmText, AsmScan, AsmTable, OError, OVM;
+Uses AsmText, AsmScan, AsmTable, AsmError, OVM;
 
 Type 
   tLineProc = Procedure ;
-
-Var 
-  PC: integer;
 
 Procedure Gen(Cmd: integer);
 Begin

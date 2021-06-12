@@ -6,9 +6,6 @@ Interface
 
 Uses OTable, OScan;
 
-Var 
-  PC: integer;
-
 Procedure InitGen;
 Procedure Gen(Cmd: integer);
 Procedure GenConst(C: integer);

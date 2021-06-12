@@ -21,7 +21,7 @@ Procedure NextCh;
 
 Implementation
 
-Uses OError;
+Uses AsmError;
 
 Const 
   TabSize = 3;

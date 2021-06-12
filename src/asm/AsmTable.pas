@@ -19,7 +19,7 @@ Procedure Find(Var Addr: integer);
 
 Implementation
 
-Uses OError;
+Uses AsmError;
 
 Var 
   Top: tObj;

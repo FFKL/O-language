@@ -52,6 +52,7 @@ Const
 
 Var 
   M: array [0..MemSize - 1] Of integer;
+  PC: integer;
 
 Procedure Run;
 
@@ -60,7 +61,6 @@ Implementation
 Procedure Run;
 
 Var 
-  PC: integer;
   SP: integer;
   BP: integer;
   Cmd: integer;

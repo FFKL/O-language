@@ -2,7 +2,7 @@
 Program OASM;
 {OVM assembler}
 
-Uses AsmText, AsmScan, AsmTable, AsmUnit, OVM;
+Uses AsmText, AsmScan, AsmTable, AsmUnit, OVM, OBin;
 
 Procedure Init;
 Begin
@@ -20,6 +20,6 @@ Begin
   WriteLn('OVM assembler');
   Init;
   AsmUnit.Assemble;
-  OVM.Run;
+  OBin.Generate;
   Done;
 End.

@@ -8,7 +8,7 @@ Procedure Load;
 
 Implementation
 
-Uses OGen, OVM, OError;
+Uses OVM, OError;
 
 Const 
   DefaultFilename = 'out';
@@ -40,6 +40,7 @@ Begin
   Reset(binFile);
   {$i+}
   If IOResult <> 0 Then
+    {TODO: use special error}
     Error('Input file was not found');
   While Not eof(binFile) 
     Do
