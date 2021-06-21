@@ -31,7 +31,7 @@ Begin
   If ParamCount < 1 Then
     Begin
       Writeln('Call format:');
-      Writeln ('   О <input file>');
+      Writeln ('   ОCompiler <input file>');
       Halt;
     End
   Else
