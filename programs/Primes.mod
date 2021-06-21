@@ -24,4 +24,5 @@ BEGIN
   END;
   Out.Ln;
   Out.Int(c, 0);
+  Out.Ln;
 END Primes.
