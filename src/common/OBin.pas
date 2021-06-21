@@ -34,8 +34,14 @@ Var
   cmd: integer;
   loaderPC: integer;
 Begin
+  If ParamCount < 1 Then
+    Begin
+      Writeln('Call format:');
+      Writeln ('   О <input file>');
+      Halt;
+    End;
   loaderPC := 0;
-  Assign(binFile, DefaultFilename);
+  Assign(binFile, ParamStr(1));
   {$i-}
   Reset(binFile);
   {$i+}
